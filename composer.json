@@ -1,0 +1,23 @@
+{
+    "name": "mahadirz/laravel-google-datastore",
+    "description": "A laravel package for integrating Laravel with Google Cloud Datastore.",
+    "authors": [
+        {
+            "name": "Mahadir Ahmad",
+            "email": "mahadir@madet.my"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.6.0",
+        "google/cloud-datastore": "1.0.*"
+    },
+    "require-dev": {
+
+    },
+    "autoload": {
+        "psr-4": {
+            "Mahadirz\\GoogleDatastore\\": "src/"
+        }
+    }
+}

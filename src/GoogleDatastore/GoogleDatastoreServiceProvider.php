@@ -15,6 +15,7 @@ class GoogleDatastoreServiceProvider extends ServiceProvider
     public function boot()
     {
         Model::setConnectionResolver($this->app['db']);
+        Model::setEventDispatcher($this->app['events']);
     }
 
     /**
@@ -30,15 +31,5 @@ class GoogleDatastoreServiceProvider extends ServiceProvider
                 return new Connection($config);
             });
         });
-    }
-
-    /**
-     * Get the default query grammar instance.
-     *
-     * @return \Illuminate\Database\Query\Grammars\MySqlGrammar
-     */
-    protected function getDefaultQueryGrammar()
-    {
-        return $this->withTablePrefix(new QueryGrammar());
     }
 }

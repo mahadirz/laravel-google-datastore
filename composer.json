@@ -1,6 +1,6 @@
 {
     "name": "mahadirz/laravel-google-datastore",
-    "description": "A laravel package for integrating Laravel with Google Cloud Datastore.",
+    "description": "A laravel package for integrating Laravel with Google Cloud Datastore",
     "authors": [
         {
             "name": "Mahadir Ahmad",

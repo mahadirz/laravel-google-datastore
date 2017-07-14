@@ -2,12 +2,12 @@
 
 namespace Mahadirz\GoogleDatastore\Eloquent;
 
-use GoogleDatastore\Query\Builder as QueryBuilder;
-use GoogleDatastore\Eloquent\Builder as EloquentBuilder;
+use Mahadirz\GoogleDatastore\Query\Builder as QueryBuilder;
+use Mahadirz\GoogleDatastore\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Model as BaseModel;
-
 abstract class Model extends BaseModel
 {
+    protected $excludeFromIndexes = array();
     /**
      * Create a new Eloquent query builder for the model.
      *
@@ -28,9 +28,11 @@ abstract class Model extends BaseModel
     protected function newBaseQueryBuilder()
     {
         $connection = $this->getConnection();
-
-        return new QueryBuilder($connection, $connection->getPostProcessor());
+        $builder = new QueryBuilder($connection, $connection->getPostProcessor());
+        $builder->excludeFromIndexes = $this->excludeFromIndexes;
+        return $builder;
     }
+
 
     /**
      * Handle dynamic method calls into the method.

@@ -3,18 +3,16 @@
 namespace Mahadirz\GoogleDatastore;
 
 use Mahadirz\GoogleDatastore\Query\Grammar as Grammar;
+use Google\Cloud\Datastore\DatastoreClient;
+use Illuminate\Database\Connection as BaseConnection;
 
-class Connection extends \Illuminate\Database\Connection
+
+class Connection extends BaseConnection
 {
     /**
-     * @var type
+     * @var \Google\Cloud\Datastore\DatastoreClient
      */
-    protected $googleClient;
-
-    /**
-     * @var type
-     */
-    protected $googleGateway;
+    protected $connection;
 
     /**
      * Create a new database connection instance.
@@ -26,18 +24,12 @@ class Connection extends \Illuminate\Database\Connection
 
         //Set the config
         $this->config = $config;
-        dd($this->config);
-
         // Create the connection
         $this->connection = $this->createConnection();
 
-        // We need to initialize a query grammar and the query post processors
-        // which are both very important parts of the database abstractions
-        // so we initialize these to their default values while starting.
-        $this->useDefaultQueryGrammar();
-
-        //Use the default post processor.
         $this->useDefaultPostProcessor();
+        $this->useDefaultSchemaGrammar();
+        $this->useDefaultQueryGrammar();
     }
 
     /**
@@ -63,7 +55,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Get a new query builder instance.
      *
-     * @return \GoogleDatastore\Query\Builder
+     * @return \Mahadirz\GoogleDatastore\Query\Builder
      */
     public function query()
     {
@@ -80,6 +72,14 @@ class Connection extends \Illuminate\Database\Connection
     public function kind($kind)
     {
         return $this->table($kind);
+    }
+
+    /**
+     * @return \Google\Cloud\Datastore\DatastoreClient
+     */
+    public function getConnection()
+    {
+        return $this->connection;
     }
 
     /**
@@ -102,31 +102,19 @@ class Connection extends \Illuminate\Database\Connection
         return new Query\Processor();
     }
 
-    /**
-     * Get the gateway used for connecting to Google.
-     *
-     * @return \GDS\Gateway\GoogleAPIClient
-     */
-    public function getGoogleGateway()
-    {
-        return $this->googleGateway;
-    }
 
     /**
-     * Create a new MongoDB connection.
+     * Create a new Datastore connection.
      *
-     * @return \GDS\Gateway\GoogleAPIClient
+     * @return \Google\Cloud\Datastore\DatastoreClient
      */
     protected function createConnection()
     {
+        $client = new DatastoreClient(array(
+            'keyFilePath' =>  app_path('../').$this->config['keyFilePath'],
+        ));
 
-        // We'll need a Google_Client, use our convenience method
-        $this->googleClient = \GDS\Gateway\GoogleAPIClient::createGoogleClient($this->config['appname'], $this->config['service_email'], base_path().'/resources/assets/'.$this->config['key_file']);
-
-        //THE GATEWAY TO USE
-        $this->googleGateway = new \GDS\Gateway\GoogleAPIClient($this->googleClient, $this->config['project_id']);
-
-        return $this->googleClient;
+        return $client;
     }
 
     /**
@@ -139,6 +127,6 @@ class Connection extends \Illuminate\Database\Connection
      */
     public function __call($method, $parameters)
     {
-        return call_user_func_array([$this->db, $method], $parameters);
+        return call_user_func_array([$this, $method], $parameters);
     }
 }

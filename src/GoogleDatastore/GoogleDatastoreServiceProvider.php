@@ -16,6 +16,10 @@ class GoogleDatastoreServiceProvider extends ServiceProvider
     {
         Model::setConnectionResolver($this->app['db']);
         Model::setEventDispatcher($this->app['events']);
+
+        $this->publishes([
+            __DIR__.'../../config/gcdatastore.php' => config_path('gcdatastore.php'),
+        ]);
     }
 
     /**
@@ -25,6 +29,10 @@ class GoogleDatastoreServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->mergeConfigFrom(
+            __DIR__.'/../../config/gcdatastore.php', 'database.connections.gdatastore'
+        );
+
         // Add database driver.
         $this->app->resolving('db', function ($db) {
             $db->extend('gdatastore', function ($config) {

@@ -2,6 +2,7 @@
 
 namespace Mahadirz\GoogleDatastore\Query;
 
+use Google\Cloud\Datastore\DatastoreClient;
 use Google\Cloud\Datastore\Entity;
 use Google\Cloud\Datastore\EntityIterator;
 use Google\Cloud\Datastore\Query\Query;
@@ -18,6 +19,12 @@ class Builder extends BaseBuilder
      * @var \Illuminate\Database\Eloquent\Collection
      */
     protected $collection;
+
+    /**
+     * The key to entity
+     * @var string
+     */
+    protected $_id;
 
     /**
      * The current query value bindings.
@@ -73,7 +80,7 @@ class Builder extends BaseBuilder
      * //TODO move this outside Builder
      * The datastore client.
      *
-     * @var array
+     * @var DatastoreClient
      */
     protected $dataStoreClient;
 
@@ -133,17 +140,6 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Set the projections.
-     *
-     * @param  array $columns
-     * @return $this
-     */
-    public function project($columns)
-    {
-        $this->projections = is_array($columns) ? $columns : func_get_args();
-        return $this;
-    }
-    /**
      * Set the cursor timeout in seconds.
      *
      * @param  int $seconds
@@ -175,6 +171,11 @@ class Builder extends BaseBuilder
             if (starts_with($operator, '$')) {
                 $operator = substr($operator, 1);
             }
+        }
+        $col = &$params[0];
+        if(starts_with($column , $this->from . "." )){
+            //strip off table name
+            $col = substr($column,strlen($this->from)+1);
         }
         return call_user_func_array('parent::where', $params);
     }
@@ -221,10 +222,40 @@ class Builder extends BaseBuilder
         foreach ($entities as $i=>$entity){
             /* @var Entity $entity */
             $results[$i] = $entity->get();
+            if($this->_id) $results[$i]['id'] = $this->_id;
         }
         // Return results as an array with numeric keys
         //$results = iterator_to_array($cursor, false);
         return $this->useCollections ? new Collection($results) : $results;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function update(array $values, array $options = [])
+    {
+        return $this->performUpdate($values, $options);
+    }
+
+    /**
+     * Perform an update query.
+     *
+     * @param  array $query
+     * @param  array $options
+     * @return int
+     */
+    protected function performUpdate($query, array $options = [])
+    {
+        //TODO specify where
+        $this->compileWheres();
+        $key = $this->dataStoreClient->key($this->from,$this->_id);
+        $entity = $this->dataStoreClient->lookup($key);
+        foreach ($query as $k=>$v){
+            $entity->{$k} = $v;
+        }
+        $result = $this->dataStoreClient->update($entity);
+        dd($result);
+        return 0;
     }
 
     /**
@@ -291,9 +322,12 @@ class Builder extends BaseBuilder
             }
 
             if($where['column'] == 'id'){
-                //filter on the value of an entity's key
-                $where['column'] = '__key__';
-                $where['value'] = sprintf('KEY(%s, %s)',$this->from,$where['value']);
+                if(isset($where['value'])){
+                    //filter on the value of an entity's key
+                    $this->_id = $where['value'];
+                    $where['column'] = '__key__';
+                    $where['value'] = sprintf('KEY(%s, %s)',$this->from,$where['value']);
+                }
                 //$this->dataStoreQuery->filter('__key__', $where['operator'], $this->dataStoreClient->key($this->from, $where['column']));
             }
 

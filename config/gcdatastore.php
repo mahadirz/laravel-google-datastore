@@ -8,6 +8,7 @@
 
 return [
     'driver' => 'gdatastore',
+    'name' => 'gdatastore',
     'keyFilePath' => env('GC_AUTH_JSON', 'GC.json'),
     'prefix' => '',
 ];

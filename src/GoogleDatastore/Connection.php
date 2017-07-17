@@ -32,15 +32,6 @@ class Connection extends BaseConnection
         $this->useDefaultQueryGrammar();
     }
 
-    /**
-     * Get the PDO driver name.
-     *
-     * @return string
-     */
-    public function getDriverName()
-    {
-        return 'gdatastore';
-    }
 
     /**
      * @param type $table

@@ -8,16 +8,19 @@ use Illuminate\Database\Eloquent\Model as BaseModel;
 abstract class Model extends BaseModel
 {
     protected $excludeFromIndexes = array();
+
+
+
     /**
      * Create a new Eloquent query builder for the model.
      *
-     * @param QueryBuilderr $query
+     * @param QueryBuilder $query
      *
      * @return EloquentBuilder|static
      */
     public function newEloquentBuilder($query)
     {
-        return new Builder($query);
+        return new EloquentBuilder($query);
     }
 
     /**
@@ -28,6 +31,9 @@ abstract class Model extends BaseModel
     protected function newBaseQueryBuilder()
     {
         $connection = $this->getConnection();
+        if(get_class($connection) != 'Mahadirz\GoogleDatastore\Connection'){
+            dd(get_class($connection));
+        }
         $builder = new QueryBuilder($connection, $connection->getPostProcessor());
         $builder->excludeFromIndexes = $this->excludeFromIndexes;
         return $builder;

@@ -254,8 +254,7 @@ class Builder extends BaseBuilder
             $entity->{$k} = $v;
         }
         $result = $this->dataStoreClient->update($entity);
-        dd($result);
-        return 0;
+        return $result > 0;
     }
 
     /**

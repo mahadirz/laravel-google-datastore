@@ -31,9 +31,6 @@ abstract class Model extends BaseModel
     protected function newBaseQueryBuilder()
     {
         $connection = $this->getConnection();
-        if(get_class($connection) != 'Mahadirz\GoogleDatastore\Connection'){
-            dd(get_class($connection));
-        }
         $builder = new QueryBuilder($connection, $connection->getPostProcessor());
         $builder->excludeFromIndexes = $this->excludeFromIndexes;
         return $builder;
